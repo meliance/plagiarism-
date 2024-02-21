@@ -1,0 +1,49 @@
+import os
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+
+# open files in the directory that ends with .txt
+testfiles = [doc for doc in os.listdir() if doc.endswith('.txt')]
+testfiles
+
+testnotes = [open(_file,encoding='utf-8').read() for _file in testfiles]
+testnotes
+
+def vectorize(text):
+    return TfidfVectorizer().fit_transform(text).toarray()  
+
+def similarity(doc1,doc2):
+    return cosine_similarity([doc1,doc2])
+
+vectors = vectorize(testnotes)
+vectors
+
+tesvectors = list(zip(testfiles,vectors))
+tesvectors
+
+plagiarismresult = set()
+def check_plagiarism():
+    global tesvectors
+    for test_a, text_vector_a in tesvectors:
+        new_vectors = tesvectors.copy()
+        current_index = new_vectors.index((test_a, text_vector_a))
+        print(current_index)
+        del new_vectors[current_index]
+        for test_b, text_vector_b in new_vectors:
+            simscore = similarity(text_vector_a, text_vector_b)[0][1]
+            print(similarity(text_vector_a, text_vector_b))
+            test_pair = sorted((test_a, test_b))
+#             print (similarity(text_vector_a, text_vector_b))
+#             print(test_pair)
+            score = [test_pair[0], test_pair[1], simscore]
+            plagiarismresult.add(tuple(score))
+    return plagiarismresult
+
+for data in check_plagiarism():
+    print(data)
+
+
+
+
+
+
